@@ -10,7 +10,8 @@ class CustomerBase(BaseModel):
 class Customer(CustomerBase):
     id: int
     class Config:
-        orm_mode = True
+        from_attributes = True
+
 
 class ProductBase(BaseModel):
     name: str
@@ -19,7 +20,8 @@ class ProductBase(BaseModel):
 class Product(ProductBase):
     id: int
     class Config:
-        orm_mode = True
+        from_attributes = True
+      
 
 class OrderBase(BaseModel):
     customer_id: int
@@ -28,8 +30,8 @@ class OrderBase(BaseModel):
 class Order(OrderBase):
     id: int
     class Config:
-        orm_mode = True
-
+        from_attributes = True
+        
 class OrderItemBase(BaseModel):
     order_id: int
     product_id: int
@@ -38,4 +40,4 @@ class OrderItemBase(BaseModel):
 class OrderItem(OrderItemBase):
     id: int
     class Config:
-        orm_mode = True
+        from_attributes = True
