@@ -1,11 +1,27 @@
-from fastapi import FastAPI
-from .routes import router
-from .db import Base, engine
+# app/main.py
+from fastapi import FastAPI, Depends
+from sqlalchemy.orm import Session
+from .db import SessionLocal
+from . import models, schemas
 
-# Create tables if not already present
-Base.metadata.create_all(bind=engine)
+app = FastAPI(title="Sales Query Agent")
 
-app = FastAPI(title="AI Sales Query Agent")
+# Dependency to get DB session
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
 
-# Include routes
-app.include_router(router)
+@app.get("/health")
+def health_check():
+    return {"status": "ok"}
+
+@app.get("/tables")
+def list_tables():
+    return ["customers", "products", "orders", "order_items"]
+
+@app.get("/customers", response_model=list[schemas.Customer])
+def get_customers(db: Session = Depends(get_db)):
+    return db.query(models.Customer).all()
