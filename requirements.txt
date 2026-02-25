@@ -1,6 +1,10 @@
 fastapi
 uvicorn
 sqlalchemy
+pydantic
+python-dotenv
 langchain
-anthropic
-pytest
+langchain-openai
+langchain-community
+langchain-experimental
+

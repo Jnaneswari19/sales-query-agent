@@ -1,15 +1,30 @@
 import os
-from langchain_anthropic import ChatAnthropic
+from sqlalchemy.orm import Session
+from dotenv import load_dotenv
 
-api_key = os.getenv("ANTHROPIC_API_KEY")
+from langchain_openai import ChatOpenAI
+from langchain_community.utilities import SQLDatabase
+from langchain_experimental.sql import SQLDatabaseChain
 
-llm = ChatAnthropic(model="claude-3-haiku", temperature=0, api_key=api_key)
+from .db import engine
 
-def generate_sql(question: str, schema_context: dict):
-    prompt = f"""
-    You are a Text-to-SQL assistant.
-    User question: {question}
-    Database schema: {schema_context}
-    Generate a valid SQL SELECT query.
-    """
-    return llm.invoke(prompt).content
+# Load environment variables
+load_dotenv()
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+
+if not OPENAI_API_KEY:
+    raise ValueError("OPENAI_API_KEY not set. Please add it to your .env file.")
+
+# Setup LangChain SQLDatabase
+db = SQLDatabase(engine)
+llm = ChatOpenAI(openai_api_key=OPENAI_API_KEY, temperature=0)
+sql_chain = SQLDatabaseChain.from_llm(llm, db, verbose=True)
+
+def run_nl_query(query: str, db_session: Session):
+    try:
+        result = sql_chain.invoke(query)   # ✅ use invoke instead of run
+        return {"query": query, "result": result}
+    except Exception as e:
+        return {"error": str(e)}
+
+
