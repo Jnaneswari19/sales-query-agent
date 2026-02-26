@@ -6,3 +6,6 @@ __pycache__/
 .env
 venv/
 data/sales.db
+node_modules/
+build/
+.env
