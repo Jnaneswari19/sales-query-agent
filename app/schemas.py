@@ -7,7 +7,7 @@ class CustomerBase(BaseModel):
 class Customer(CustomerBase):
     id: int
     class Config:
-        from_attributes = True  # ✅ Pydantic v2 fix
+        from_attributes = True  
 
 class ProductBase(BaseModel):
     name: str

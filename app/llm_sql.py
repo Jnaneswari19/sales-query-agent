@@ -1,30 +1,51 @@
 import os
+import requests
 from sqlalchemy.orm import Session
-from dotenv import load_dotenv
+from sqlalchemy import text  
 
-from langchain_openai import ChatOpenAI
-from langchain_community.utilities import SQLDatabase
-from langchain_experimental.sql import SQLDatabaseChain
+def run_nl_query(query: str, db: Session):
+    api_key = os.getenv("OPENAI_API_KEY")
+    sql = None
 
-from .db import engine
+    prompt = f"""
+    You are an expert SQL assistant.
+    Translate the following natural language request into a valid SQL query for a PostgreSQL database.
+    Return only the SQL query, no explanations, no comments.
 
-# Load environment variables
-load_dotenv()
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+    Request: {query}
+    """
 
-if not OPENAI_API_KEY:
-    raise ValueError("OPENAI_API_KEY not set. Please add it to your .env file.")
+    if api_key:
+        try:
+            from openai import OpenAI
+            client = OpenAI(api_key=api_key)
+            response = client.chat.completions.create(
+                model="gpt-4o-mini",
+                messages=[{"role": "user", "content": prompt}]
+            )
+            sql = response.choices[0].message.content.strip()
+        except Exception as e:
+            # Fallback to Ollama
+            response = requests.post(
+                "http://host.docker.internal:11434/api/generate",
+                json={"model": "llama3", "prompt": prompt, "stream": False}
+            )
+            print("Ollama raw response:", response.text)
+            sql = response.json().get("response", "").strip()
+    else:
+        # No API key → use Ollama directly
+        response = requests.post(
+            "http://host.docker.internal:11434/api/generate",
+            json={"model": "llama3", "prompt": prompt, "stream": False}
+        )
+        print("Ollama raw response:", response.text)
+        sql = response.json().get("response", "").strip()
 
-# Setup LangChain SQLDatabase
-db = SQLDatabase(engine)
-llm = ChatOpenAI(openai_api_key=OPENAI_API_KEY, temperature=0)
-sql_chain = SQLDatabaseChain.from_llm(llm, db, verbose=True)
+    # Debug logging
+    print("Generated SQL:", sql)
 
-def run_nl_query(query: str, db_session: Session):
     try:
-        result = sql_chain.invoke(query)   # ✅ use invoke instead of run
-        return {"query": query, "result": result}
+        results = db.execute(text(sql)).fetchall()  # ✅ Wrap with text()
+        return {"sql": sql, "results": [dict(r) for r in results]}
     except Exception as e:
-        return {"error": str(e)}
-
-
+        return {"sql": sql, "error": str(e)}

@@ -1,5 +1,6 @@
 from fastapi import FastAPI, Depends
 from sqlalchemy.orm import Session
+from pydantic import BaseModel
 from .db import SessionLocal
 from . import models, schemas
 from .llm_sql import run_nl_query
@@ -25,6 +26,10 @@ def list_tables():
 def get_customers(db: Session = Depends(get_db)):
     return db.query(models.Customer).all()
 
+
+class QueryRequest(BaseModel):
+    query: str
+
 @app.post("/query")
-def run_query(query: str, db: Session = Depends(get_db)):
-    return run_nl_query(query, db)
+def run_query(request: QueryRequest, db: Session = Depends(get_db)):
+    return run_nl_query(request.query, db)
