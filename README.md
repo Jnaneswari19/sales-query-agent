@@ -112,41 +112,12 @@ POST /query
 
 ---
 
-## 🏗️ Next Steps
+## Usage
 
-### 1. Add More Endpoints
-- Create dedicated REST endpoints for `/customers`, `/products`, and `/orders`.
-- Support CRUD operations (GET, POST, PUT/PATCH, DELETE).
-- Allow direct access to data without relying solely on natural language queries.
-
-### 2. Build a Simple Frontend (React/Vue)
-- Implement a lightweight UI where users can:
-  - Enter natural language queries
-  - View generated SQL
-  - See results in a clean table
-- Suggested stack: React + Axios + TailwindCSS/Bootstrap.
-
-### 3. Expand Test Coverage with Seeded Data
-- Add tests for listing products, fetching orders, and validating seeded data.
-- Ensure reproducibility by seeding predictable rows in `conftest.py`.
-- Cover both mocked queries and real DB queries.
-
-### 4. Add CI/CD Workflow and Repo Badges
-- Configure GitHub Actions to:
-  - Run `pytest` on every push
-  - Check code formatting (Black, Flake8)
-  - Build and test Docker image
-- Add badges to `README.md`:
-  - Build status
-  - Test coverage
-  - Python version
-  - License
-
----
-
-## 📜 License
-MIT License. See `LICENSE` file for details.
-
+1. Open the frontend in your browser (`http://localhost:3000`).
+2. Enter a natural language sales question.
+3. The backend converts it to SQL and fetches results from the database.
+4. View the results on the frontend dashboard.
 ---
 
 ## 📦 Requirements
