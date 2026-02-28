@@ -1,47 +1,28 @@
-from app.db import Base, engine
-from app.models import Customer, Product, Order, OrderItem
+from datetime import datetime
+from app.db import Base, engine, SessionLocal
+from app.models import Customer, Product, Order
 
-DATABASE_URL = "sqlite:///./data/sales.db"
+def init_db():
+    Base.metadata.drop_all(bind=engine)   # reset schema
+    Base.metadata.create_all(bind=engine)
 
-Base = declarative_base()
+    db = SessionLocal()
 
-class Customer(Base):
-    __tablename__ = "customers"
-    id = Column(Integer, primary_key=True, index=True)
-    name = Column(String)
-    state = Column(String)
+    alice = Customer(name="Alice", email="alice@example.com")
+    bob = Customer(name="Bob", email="bob@example.com")
 
-class Product(Base):
-    __tablename__ = "products"
-    id = Column(Integer, primary_key=True, index=True)
-    name = Column(String)
-    sales = Column(Integer)
+    laptop = Product(name="Laptop", price=1200.0)
+    phone = Product(name="Phone", price=800.0)
 
-class Order(Base):
-    __tablename__ = "orders"
-    id = Column(Integer, primary_key=True, index=True)
-    customer_id = Column(Integer, ForeignKey("customers.id"))
-    product_id = Column(Integer, ForeignKey("products.id"))
-    order_date = Column(Date)
-    amount = Column(Float)
+    db.add_all([alice, bob, laptop, phone])
+    db.commit()
 
-# Create DB + tables
-engine = create_engine(DATABASE_URL, echo=True)
-Base.metadata.create_all(engine)
+    order1 = Order(customer_id=alice.id, product_id=laptop.id, timestamp=datetime.now())
+    order2 = Order(customer_id=bob.id, product_id=phone.id, timestamp=datetime.now())
 
-# Seed sample data
-SessionLocal = sessionmaker(bind=engine)
-session = SessionLocal()
+    db.add_all([order1, order2])
+    db.commit()
+    db.close()
 
-session.add_all([
-    Customer(name="Alice", state="New York"),
-    Customer(name="Bob", state="California"),
-    Product(name="Laptop", sales=1200),
-    Product(name="Phone", sales=800),
-    Order(customer_id=1, product_id=1, order_date="2024-01-15", amount=1200),
-    Order(customer_id=2, product_id=2, order_date="2024-01-20", amount=800),
-])
-
-session.commit()
-session.close()
-print("✅ Database initialized with sample data")
+if __name__ == "__main__":
+    init_db()

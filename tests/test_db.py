@@ -1,7 +1,8 @@
-from sqlalchemy import text
 from app.db import SessionLocal
+from app.models import Customer
 
 def test_db_connection():
     db = SessionLocal()
-    result = db.execute(text("SELECT 1")).fetchone()
-    assert result[0] == 1
+    customers = db.query(Customer).all()
+    db.close()
+    assert isinstance(customers, list)
