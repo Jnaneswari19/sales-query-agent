@@ -64,6 +64,24 @@ sales-query-agent/
    ```
 
 ---
+## 🛠️ Installation
+
+```bash
+# Clone the repository
+git clone https://github.com/Jnaneswari19/sales-query-agent.git
+cd sales-query-agent
+
+# Create a virtual environment (Windows example)
+python -m venv venv
+venv\Scripts\activate
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Initialize the database
+python app/init_db.py
+```
+
 
 ## ▶️ Run the App
 
